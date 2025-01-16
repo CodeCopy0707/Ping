@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ping URLs</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    .url-container {
+      margin: 10px 0;
+      padding: 10px;
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .status {
+      font-weight: bold;
+    }
+    .success {
+      color: green;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <h1>URL Ping Monitor</h1>
+  <div id="url-container">
+    <!-- URLs and their status will be displayed here -->
+  </div>
+
+  <script>
+    const urls = [
+      { url: "https://boiiii.onrender.com", name: "Boiiii Bot" },
+      { url: "https://kuku-qlta.onrender.com", name: "Kuku Bot" }
+    ];
+
+    const container = document.getElementById("url-container");
+
+    // Function to create UI for each URL
+    function createUrlStatusUI(urlObj) {
+      const div = document.createElement("div");
+      div.className = "url-container";
+      div.id = `url-${urlObj.name}`;
+      div.innerHTML = `
+        <p><strong>${urlObj.name}</strong> (${urlObj.url})</p>
+        <p>Status: <span class="status">Checking...</span></p>
+      `;
+      container.appendChild(div);
+    }
+
+    // Function to update the status of a URL
+    function updateStatusUI(urlObj, status, message) {
+      const urlDiv = document.getElementById(`url-${urlObj.name}`);
+      const statusSpan = urlDiv.querySelector(".status");
+      if (status === "success") {
+        statusSpan.textContent = "Active";
+        statusSpan.className = "status success";
+      } else {
+        statusSpan.textContent = `Error (${message})`;
+        statusSpan.className = "status error";
+      }
+    }
+
+    // Function to ping URLs
+    async function pingUrls() {
+      for (const urlObj of urls) {
+        try {
+          const response = await fetch(urlObj.url, { method: "GET" });
+          if (response.ok) {
+            updateStatusUI(urlObj, "success");
+          } else {
+            updateStatusUI(urlObj, "error", `Status Code: ${response.status}`);
+          }
+        } catch (error) {
+          updateStatusUI(urlObj, "error", error.message);
+        }
+      }
+    }
+
+    // Initialize UI
+    urls.forEach((urlObj) => createUrlStatusUI(urlObj));
+
+    // Ping URLs every 45 seconds
+    setInterval(pingUrls, 45000);
+
+    // Initial ping
+    pingUrls();
+  </script>
+</body>
+</html>
