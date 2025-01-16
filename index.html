@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bot Ping Dashboard</title>
+  <title>Advanced Bot Ping Dashboard</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -17,6 +17,11 @@
     }
     .dashboard {
       margin-top: 20px;
+    }
+    .loading {
+      text-align: center;
+      font-size: 20px;
+      color: #666;
     }
     .bot {
       margin-bottom: 20px;
@@ -40,6 +45,9 @@
     .error {
       color: red;
     }
+    .warning {
+      color: orange;
+    }
     .ping-count {
       margin: 10px 0;
     }
@@ -50,7 +58,7 @@
       border: 1px solid #ccc;
       border-radius: 5px;
       overflow-y: auto;
-      max-height: 150px;
+      max-height: 200px;
     }
     .log-entry {
       margin: 5px 0;
@@ -62,10 +70,14 @@
     .log-entry.error {
       color: red;
     }
+    .log-entry.warning {
+      color: orange;
+    }
   </style>
 </head>
 <body>
-  <h1>Bot Ping Dashboard</h1>
+  <h1>Advanced Bot Ping Dashboard</h1>
+  <div class="loading" id="loading">Loading Bots...</div>
   <div class="dashboard" id="dashboard"></div>
 
   <script>
@@ -73,10 +85,11 @@
     const bots = [
       { url: "https://cors-anywhere.herokuapp.com/https://boiiii.onrender.com", name: "Boiiii Bot", pingCount: 0, logs: [] },
       { url: "https://cors-anywhere.herokuapp.com/https://kuku-qlta.onrender.com", name: "Kuku Bot", pingCount: 0, logs: [] },
-         { url: "https://cors-anywhere.herokuapp.com/https://serverr-st51.onrender.com, name: "server", pingCount: 0, logs: [] }
+      { url: "https://cors-anywhere.herokuapp.com/https://serverr-st51.onrender.com", name: "Server Bot", pingCount: 0, logs: [] }
     ];
 
     const dashboard = document.getElementById("dashboard");
+    const loadingElement = document.getElementById("loading");
 
     // Function to create UI for each bot
     function createBotUI(bot) {
@@ -109,9 +122,12 @@
       if (status === "success") {
         statusEl.textContent = "Active";
         statusEl.className = "status success";
-      } else {
+      } else if (status === "error") {
         statusEl.textContent = `Inactive (${message})`;
         statusEl.className = "status error";
+      } else {
+        statusEl.textContent = `Warning (${message})`;
+        statusEl.className = "status warning";
       }
     }
 
@@ -121,7 +137,7 @@
       const logEntry = document.createElement("div");
       logEntry.className = `log-entry ${status}`;
       const timestamp = new Date().toLocaleTimeString();
-      logEntry.textContent = `[${timestamp}] ${status === "success" ? "Success" : `Error: ${message}`}`;
+      logEntry.textContent = `[${timestamp}] ${status === "success" ? "Success" : status === "error" ? `Error: ${message}` : `Warning: ${message}`}`;
       logDiv.appendChild(logEntry);
 
       // Scroll to the bottom of the log
@@ -130,6 +146,7 @@
 
     // Function to ping bots
     async function pingBots() {
+      loadingElement.style.display = "none";  // Hide loading indicator once the dashboard is populated
       for (const bot of bots) {
         try {
           const response = await fetch(bot.url, { method: "GET" });
@@ -149,14 +166,15 @@
       }
     }
 
-    // Initialize UI for all bots
-    bots.forEach((bot) => createBotUI(bot));
+    // Function to start the dashboard and pinging bots at an interval
+    function initialize() {
+      bots.forEach((bot) => createBotUI(bot));
+      pingBots();
+      setInterval(pingBots, 45000);  // Ping every 45 seconds
+    }
 
-    // Start pinging bots every 45 seconds
-    setInterval(pingBots, 45000);
-
-    // Initial ping
-    pingBots();
+    // Initialize the UI and start pinging
+    initialize();
   </script>
 </body>
 </html>
